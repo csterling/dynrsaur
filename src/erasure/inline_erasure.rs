@@ -1,10 +1,14 @@
-//! TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
-
 use std::mem::MaybeUninit;
 use const_panic::concat_panic;
 use crate::align::{AlignedBytes, Alignment, ValidAlignment};
-use crate::erasure::Erasure;
+use crate::erasure::{Erase, Erasure};
 
+/// An erasure of some underlying type that exists inline (i.e. the data for the erased-type value
+/// is within this struct, as opposed to an indirection to the data). The `SIZE`/`ALIGN` const 
+/// generics are the maximum size/alignment of the underlying type. Currently stable Rust can't
+/// compare these to [size_of]/[align_of] in const generics, so enforcing this is a run-time check.
+/// 
+/// TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
 #[repr(transparent)]
 pub struct InlineErasure<const SIZE: usize, const ALIGN: usize>
     where Alignment<ALIGN>: ValidAlignment
@@ -19,6 +23,7 @@ impl<
     where Alignment<ALIGN>: ValidAlignment
 {
     pub const fn new<T>(value: T) -> Self {
+        // TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
         Self::check_size_and_align_of::<T>();
         
         let mut bytes = AlignedBytes::zeroed();
@@ -60,7 +65,8 @@ impl<
 > Erasure<T> for InlineErasure<SIZE, ALIGN>
     where Alignment<ALIGN>: ValidAlignment
 {
-    unsafe fn downcast(self) -> T {
+    unsafe fn downcast_unchecked(self) -> T {
+        // TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
         Self::check_size_and_align_of::<T>();
         
         let mut uninitialized = MaybeUninit::<T>::uninit();
@@ -75,6 +81,19 @@ impl<
     }
 }
 
+
+impl<
+    const SIZE: usize,
+    const ALIGN: usize,
+    T
+> Erase<T> for InlineErasure<SIZE, ALIGN>
+    where Alignment<ALIGN>: ValidAlignment
+{
+    fn erase(value: T) -> Self {
+        Self::new(value)
+    }
+}
+
 impl<
     'borrow,
     const SIZE: usize,
@@ -83,7 +102,10 @@ impl<
 > Erasure<&'borrow mut T> for &'borrow mut InlineErasure<SIZE, ALIGN>
     where Alignment<ALIGN>: ValidAlignment 
 {
-    unsafe fn downcast(self) -> &'borrow mut T {
+    unsafe fn downcast_unchecked(self) -> &'borrow mut T {
+        // TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
+        InlineErasure::<SIZE, ALIGN>::check_size_and_align_of::<T>();
+        
         &mut *(self as *mut InlineErasure<SIZE, ALIGN> as *mut T)
     }
 }
@@ -94,9 +116,12 @@ impl<
     const ALIGN: usize,
     T: 'borrow
 > Erasure<&'borrow T> for &'borrow InlineErasure<SIZE, ALIGN>
-where Alignment<ALIGN>: ValidAlignment
+    where Alignment<ALIGN>: ValidAlignment
 {
-    unsafe fn downcast(self) -> &'borrow T {
+    unsafe fn downcast_unchecked(self) -> &'borrow T {
+        // TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
+        InlineErasure::<SIZE, ALIGN>::check_size_and_align_of::<T>();
+        
         &*(self as *const InlineErasure<SIZE, ALIGN> as *const T)
     }
 }

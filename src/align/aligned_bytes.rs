@@ -1,13 +1,15 @@
 use std::ops::{Deref, DerefMut};
-use crate::align::{ValidAlignment, Alignment};
+use crate::align::Alignment;
+use crate::align::valid_alignment::ValidAlignment;
 
+/// A byte-array (`[u8; SIZE]`) that is aligned to `ALIGN` bytes.
 pub struct AlignedBytes<
     const SIZE: usize,
     const ALIGN: usize
 > 
     where Alignment<ALIGN>: ValidAlignment
 {
-    align: Alignment<ALIGN>,
+    _align: Alignment<ALIGN>,
     bytes: [u8; SIZE]
 }
 
@@ -18,16 +20,25 @@ impl<
 > AlignedBytes<SIZE, ALIGN>
     where Alignment<ALIGN>: ValidAlignment
 {
-    pub const fn zeroed() -> Self {
+    /// Aligns the given byte-array.
+    pub const fn from(bytes: [u8; SIZE]) -> Self {
         AlignedBytes {
-            align: Alignment::new(),
-            bytes: [0; SIZE]
+            _align: Alignment::new(),
+            bytes
         }
     }
+    
+    /// Creates an aligned byte-array, where all elements are zero.
+    pub const fn zeroed() -> Self {
+        Self::from([0; SIZE])
+    }
+    
+    /// Borrows the underlying byte-array.
     pub const fn as_bytes(&self) -> &[u8; SIZE] {
         &self.bytes
     }
     
+    /// Mutably borrows the underlying byte-array.
     pub const fn as_bytes_mut(&mut self) -> &mut [u8; SIZE] {
         &mut self.bytes
     }
@@ -40,25 +51,29 @@ impl<
     where Alignment<ALIGN>: ValidAlignment 
 {
     fn default() -> Self {
-        AlignedBytes {
-            align: Alignment::default(),
-            bytes: [0; SIZE]
-        }
+        Self::zeroed()
     }
 }
 
 impl<
     const SIZE: usize,
     const ALIGN: usize,
-    T: Into<[u8; SIZE]>
-> From<T> for AlignedBytes<SIZE, ALIGN>
-where Alignment<ALIGN>: ValidAlignment
+> From<[u8; SIZE]> for AlignedBytes<SIZE, ALIGN>
+    where Alignment<ALIGN>: ValidAlignment
 {
-    fn from(value: T) -> Self {
-        Self {
-            align: Default::default(),
-            bytes: value.into()
-        }
+    fn from(value: [u8; SIZE]) -> Self {
+        Self::from(value)
+    }
+}
+
+impl<
+    const SIZE: usize,
+    const ALIGN: usize
+> From<AlignedBytes<SIZE, ALIGN>> for [u8; SIZE]
+    where Alignment<ALIGN>: ValidAlignment
+{
+    fn from(value: AlignedBytes<SIZE, ALIGN>) -> Self {
+        value.bytes
     }
 }
 
@@ -66,7 +81,7 @@ impl<
     const SIZE: usize,
     const ALIGN: usize
 > Deref for AlignedBytes<SIZE, ALIGN>
-where Alignment<ALIGN>: ValidAlignment
+    where Alignment<ALIGN>: ValidAlignment
 {
     type Target = [u8; SIZE];
 

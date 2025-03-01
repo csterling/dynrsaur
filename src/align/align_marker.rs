@@ -1,19 +1,22 @@
+use sealed::sealed;
 
-
-pub trait ValidAlignment {
-    const MARKER: Self::Marker;
-    
-    type Marker: Default + Copy;
-}
-
+/// Generates a new ZST with the prescribed alignment.
 macro_rules! align_marker {
     ($align:literal) => {
         ::paste::paste!{
-            #[derive(Default, Copy, Clone)]
+            #[doc = concat!("ZST with an alignment of ", stringify!($align), " bytes.")]
+            #[derive(Default, Copy, Clone, Debug)]
             #[repr(align($align))]
             pub struct [<AlignMarker $align>];
             
-            impl crate::align::align_marker::ValidAlignment for crate::align::alignment::Alignment<$align>  {
+            #[sealed]
+            impl crate::align::valid_alignment::ValidAlignment for [<AlignMarker $align>]  {
+                const MARKER: Self::Marker = [<AlignMarker $align>];
+                type Marker = [<AlignMarker $align>];
+            }
+            
+            #[sealed]
+            impl crate::align::valid_alignment::ValidAlignment for crate::align::alignment::Alignment<$align>  {
                 const MARKER: Self::Marker = [<AlignMarker $align>];
                 type Marker = [<AlignMarker $align>];
             }
@@ -21,6 +24,7 @@ macro_rules! align_marker {
     };
 }
 
+// FIXME: Restrict higher alignments on 16-bit platforms
 align_marker!(1);
 align_marker!(2);
 align_marker!(4);
@@ -37,18 +41,17 @@ align_marker!(4096);
 align_marker!(8192);
 align_marker!(16384);
 align_marker!(32768);
-
-#[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
-mod target_pointer_width_32 {
-    align_marker!(65536);
-    // TODO: the rest
-}
-#[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
-pub use target_pointer_width_32::*;
-
-#[cfg(any(target_pointer_width = "64"))]
-mod target_pointer_width_64 {
-    // TODO: ZSTs
-}
-#[cfg(any(target_pointer_width = "64"))]
-pub use target_pointer_width_64::*;
+align_marker!(65536);
+align_marker!(131072);
+align_marker!(262144);
+align_marker!(524288);
+align_marker!(1048576);
+align_marker!(2097152);
+align_marker!(4194304);
+align_marker!(8388608);
+align_marker!(16777216);
+align_marker!(33554432);
+align_marker!(67108864);
+align_marker!(134217728);
+align_marker!(268435456);
+align_marker!(536870912);

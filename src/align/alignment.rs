@@ -1,10 +1,14 @@
-use crate::align::align_marker::ValidAlignment;
+use crate::align::valid_alignment::ValidAlignment;
 
-#[derive(Default, Copy, Clone)]
+/// Const-generic alignment marker.
+/// 
+/// Generic Parameters:
+/// - `ALIGN`: the required alignment of the type. Must be a [valid alignment](ValidAlignment).
+#[derive(Default, Copy, Clone, Debug)]
 pub struct Alignment<const ALIGN: usize> 
-    where Self: ValidAlignment 
+    where Self: ValidAlignment
 {
-    marker: <Self as ValidAlignment>::Marker 
+    _marker: <Self as ValidAlignment>::Marker
 }
 
 impl<const ALIGN: usize> Alignment<ALIGN>
@@ -12,7 +16,7 @@ impl<const ALIGN: usize> Alignment<ALIGN>
 {
     pub const fn new() -> Self {
         Self {
-            marker: <Self as ValidAlignment>::MARKER
+            _marker: <Self as ValidAlignment>::MARKER
         }
     }
 } 
