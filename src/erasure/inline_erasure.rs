@@ -4,9 +4,11 @@ use crate::align::{AlignedBytes, Alignment, ValidAlignment};
 use crate::erasure::{Erase, Erasure};
 
 /// An erasure of some underlying type that exists inline (i.e. the data for the erased-type value
-/// is within this struct, as opposed to an indirection to the data). The `SIZE`/`ALIGN` const 
-/// generics are the maximum size/alignment of the underlying type. Currently stable Rust can't
-/// compare these to [size_of]/[align_of] in const generics, so enforcing this is a run-time check.
+/// is within this struct, as opposed to an indirection to the data).
+/// 
+/// The `SIZE`/`ALIGN` const generics are the maximum size/alignment of the underlying type.
+/// Currently stable Rust can't compare these to [size_of]/[align_of] in const generics, so
+/// enforcing this is a run-time check.
 /// 
 /// TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
 #[repr(transparent)]
@@ -22,6 +24,7 @@ impl<
 > InlineErasure<SIZE, ALIGN>
     where Alignment<ALIGN>: ValidAlignment
 {
+    /// Erases the given `value` inline.
     pub const fn new<T>(value: T) -> Self {
         // TODO: Use const generics to restrict `T` to validly-sized/aligned types once stable.
         Self::check_size_and_align_of::<T>();

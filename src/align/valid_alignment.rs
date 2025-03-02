@@ -4,7 +4,7 @@ use sealed::sealed;
 
 /// Indicates that the type represents a valid alignment.
 /// 
-/// Sealed trait that is only implemented for the [alignment marker types](crate::align::align_marker),
+/// Sealed trait that is only implemented for the [alignment marker types](crate::align::align_markers),
 /// e.g. [`AlignMarker32`](crate::align::AlignMarker32), and [`Alignment<ALIGN>`](crate::align::Alignment).
 #[sealed(pub(in super))]
 pub trait ValidAlignment {

@@ -1,3 +1,5 @@
+//! ZSTs with specified alignment.
+
 use sealed::sealed;
 
 /// Generates a new ZST with the prescribed alignment.

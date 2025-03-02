@@ -2,4 +2,4 @@
 
 pub mod align;
 pub mod erasure;
-pub mod util;
+mod util;
