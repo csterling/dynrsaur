@@ -2,9 +2,12 @@
 name = "dynrsaur"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+description = "Utilities for working with type-erasure/dynamic-types in Rust."
+repository = "https://github.com/csterling/dynrsaur"
+readme = "./README.md"
 
 [dependencies]
 const_panic = "0.2.11"
 paste = "1.0.15"
 sealed = "0.6.0"
-typenum = { version = "1.17.0", features = ["const-generics"] }
